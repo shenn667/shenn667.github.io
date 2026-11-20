@@ -2,10 +2,8 @@
 
 Static site for `https://shenn667.github.io/` (repo `shenn667/shenn667.github.io`).
 
-Status 2026-11-20: the repo **does not exist yet** (GitHub API → 404,
-`https://shenn667.github.io/` → 404) and no GitHub credential is available
-locally (`gh auth status` negative, keymaster: `GITHUB_CRED: ABSENT`).
-Nothing was pushed. This directory is the publish-ready staging.
+Status 2026-11-20: published to GitHub (`shenn667/shenn667.github.io`, branch
+`main`) and served from the repository root by GitHub Pages.
 
 ## Content
 
@@ -21,17 +19,17 @@ Nothing was pushed. This directory is the publish-ready staging.
 |---|---|---|
 | PyPI | https://pypi.org/project/cited-rag/ | live (v0.1.0 verified) |
 | GitHub | https://github.com/shenn667/cited-rag | live |
-| HF dataset | https://huggingface.co/datasets/shenn667/cited-rag-golden-52 | per spec; publication in parallel (may 404 until public) |
-| dev.to | https://dev.to/shenn667/zero-dependency-verified-agents-cited-or-refused-gated-in-ci-3fnh | live (2026-11-18, found via search) |
-| Glama Registry | — | **TODO**: no listing found; cited-rag is a CLI, not an MCP server. See `TODO(glama, founder)` comment in `eval/index.html`. |
+| HF dataset | https://huggingface.co/datasets/SHENNN667/cited-rag-golden-52 | live (HTTP 200) |
+| dev.to | https://dev.to/shenn667/zero-dependency-verified-agents-cited-or-refused-gated-in-ci-3fnh | live (HTTP 200, 2026-11-18) |
+| Glama Registry | https://glama.ai/mcp/servers/shenn667/agent-context-bridge | live (HTTP 200); MCP context pillar, not cited-rag itself |
 
-## Publish (founder, needs GitHub auth)
+## Publish (done)
 
 ```bash
 cd ~/ai_env/labs/shenn667.github.io
-git init -b main  # already initialised if committed
-gh repo create shenn667/shenn667.github.io --public --source=. --push
-# Settings → Pages → Deploy from branch → main → / (root). Then:
+git remote add origin git@github.com:shenn667/shenn667.github.io.git
+git push -u origin main
+# Settings → Pages → Deploy from branch → main → / (root)
 # https://shenn667.github.io/ and https://shenn667.github.io/eval/
 ```
 
