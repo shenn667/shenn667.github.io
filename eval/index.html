@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cited-rag — Evaluation (SQE) · shenn667</title>
+<meta name="description" content="Reproducible SQE evaluation of cited-rag v0.1.0: protocol, Recall@5=1.00, MRR=0.93, correct-refusal 12/12, gates C1-C6, honest limitations.">
+<style>
+:root { color-scheme: light dark; }
+body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 52rem; margin: 2.5rem auto; padding: 0 1.25rem; line-height: 1.65; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+pre { padding: 1rem; border: 1px solid #ccc; border-radius: 8px; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #bbb; padding: .45rem .7rem; text-align: left; }
+th { font-weight: 600; }
+.badge { display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .8rem; font-weight: 700; }
+.pass { background: #d9f2e3; color: #0c6b34; border: 1px solid #0c6b34; }
+.todo { background: #fff3cd; color: #7a5b00; border: 1px solid #7a5b00; }
+.warn { background: #fdecea; color: #8f1d16; border: 1px solid #8f1d16; }
+.meta { color: #666; font-size: .9rem; }
+nav a { margin-right: 1rem; }
+.grid { display: grid; gap: .75rem; }
+@media (min-width: 40rem) { .grid { grid-template-columns: 1fr 1fr; } }
+.card { border: 1px solid #ccc; border-radius: 8px; padding: .9rem 1rem; }
+.card h3 { margin-top: 0; }
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<nav><a href="../">← shenn667</a> <a href="./">eval</a></nav>
+
+<h1>cited-rag — Evaluation</h1>
+<p class="meta">Software Quality Engineering report · <strong>v0.1.0</strong> · QA certified 2026-11-16 (board <code>cited-rag</code>, task <code>t_e42b7406</code>) · Scope: <code>PRODUCT_BRIEF.md §2</code> · Verdict: <span class="badge pass">PASS 6/6</span></p>
+
+<p>Local RAG you can trust. Zero hallucination by design: every claim is cited (<code>[file:L1-L2]</code>) or the answer is refused with <code>Insufficient evidence</code>. Stdlib-only, offline-first.</p>
+
+<h2>1. Reproducible protocol</h2>
+<p>One command reproduces every number below from the bundled golden set — run it, don't trust this table:</p>
+<pre><code>pip install cited-rag
+cited-rag index ./docs --db ./index.db
+cited-rag eval --golden eval/golden.jsonl</code></pre>
+<ul>
+<li><strong>Corpus:</strong> 12 docs (<code>examples/docs/</code>) — BM25/RFF tuning notes, chunking, CLI, fidelity, refusal, eval-metrics, LLM adapter, security, offline-portfolio.</li>
+<li><strong>Golden set:</strong> <code>eval/golden.jsonl</code>, <strong>n = 52</strong> questions — <strong>40 in-corpus</strong> (<code>should_refuse: false</code>, each mapped to an <code>expected_doc</code>) + <strong>12 out-of-corpus</strong> (<code>should_refuse: true</code>: sport, cuisine, médecine, histoire…).</li>
+<li><strong>Environment:</strong> Python 3.12, zero dependencies (<code>dependencies = []</code>), pure offline (no socket/urllib outside the opt-in adapter).</li>
+<li><strong>Generation contract:</strong> extractive verbatim + exact <code>[file:Lstart-Lend]</code> offsets; refusal trigger <code>max_score &lt; --min-score</code> (default 0.35) or fidelity &lt; 0.5; refused answers carry <strong>zero</strong> citations, exit 0.</li>
+</ul>
+
+<h2>2. Results (measured, not claimed)</h2>
+<table>
+<thead><tr><th>Metric</th><th>Gate (C4)</th><th>Measured</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr><td>Recall@5</td><td>≥ 0.80</td><td><strong>1.00</strong></td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>MRR</td><td>≥ 0.60</td><td><strong>0.93</strong></td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>Correct-refusal (off-topic)</td><td>≥ 0.90</td><td><strong>1.00 (12/12)</strong></td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>n (golden)</td><td>≥ 50 Q/A</td><td><strong>52</strong> (40 + 12)</td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>pytest</td><td>green</td><td><strong>59 passed</strong> (QA run; current tree: 61)</td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>Index perf</td><td>&lt; 60 s / 50 docs</td><td><strong>12 docs in ~0.4 s</strong> *</td><td><span class="badge pass">PASS *</span></td></tr>
+</tbody>
+</table>
+<p class="meta">* Reserve (non-blocking, QA-flagged): <code>examples/docs</code> ships 12 docs, not 50 — the 60 s budget holds with huge margin (0.4 s) but load at exactly 50 docs was not measured as-is. Raw eval output: <code>Recall@5=1.00 MRR=0.93 correct-refusal=1.00 (12/12) n=52</code>.</p>
+
+<h2>3. Release gates C1–C6</h2>
+<table>
+<thead><tr><th>Gate</th><th>Requirement</th><th>Evidence</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr><td>C1 offline stdlib-only</td><td><code>index</code> + <code>ask</code>, no external dep</td><td><code>dependencies = []</code>; index+ask OK offline</td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>C2 exact citations</td><td>100% claims cited, exact offsets</td><td>3/3 phrases verbatim <code>[01-bm25-ranking.md:L1-L20]</code>, fidelity 1.00</td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>C3 refusal</td><td><code>Insufficient evidence</code>, exit 0, no invented citations</td><td>12/12 off-topic → refusal</td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>C4 eval</td><td>Recall@5 ≥ 0.80, MRR ≥ 0.60, refusal ≥ 0.90, ≥ 50 Q/A</td><td>1.00 / 0.93 / 1.00, n = 52</td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>C5 LLM OFF by default</td><td>opt-in <code>--llm</code> only, citation format unchanged</td><td><code>store_true, default=False</code>; no network outside adapter</td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>C6 tests + perf + docs</td><td>pytest green, index &lt; 60 s, 3-command quickstart</td><td>59 passed (QA) / 0.4 s / README quickstart</td><td><span class="badge pass">PASS *</span></td></tr>
+</tbody>
+</table>
+<p class="meta">* Same 50-docs reserve as §2. Blocking gates C2/C3/C4 all PASS → YES to ship, tag <code>cited-rag-v0.1.0</code>.</p>
+
+<h2>4. Honest limitations</h2>
+<ul>
+<li><strong>Small corpus:</strong> ~12 demo docs — rare-term IDF statistics are noisy; scores stabilize as the corpus grows. Re-index after every corpus change.</li>
+<li><strong>Lexical retrieval only by default:</strong> BM25 + TF-IDF miss paraphrases and cross-lingual queries. The dense adapter (<code>--llm</code>) is opt-in and <strong>unevaluated</strong> against the gates above.</li>
+<li><strong>Extractive answers:</strong> verbatim quoting is faithful but stilted — no synthesis, no multi-hop reasoning, fixed fidelity threshold (0.5).</li>
+<li><strong>Secrets:</strong> the indexer <em>warns</em> on key-like patterns (<code>AKIA…</code>, <code>ghp_…</code>) but does not redact — scrub corpora before indexing.</li>
+<li><strong>Scale:</strong> single-machine SQLite/JSON index; not a distributed search engine and makes no such claim. The 50-doc budget was not measured at exactly 50 docs.</li>
+</ul>
+
+<h2>5. Artifacts &amp; links</h2>
+<div class="grid">
+<div class="card"><h3>Package</h3><p><a href="https://pypi.org/project/cited-rag/">PyPI · cited-rag v0.1.0</a><br><code>pip install cited-rag</code></p></div>
+<div class="card"><h3>Source</h3><p><a href="https://github.com/shenn667/cited-rag">GitHub · shenn667/cited-rag</a><br>CI badge, MIT, Trusted Publishing (no stored token).</p></div>
+<div class="card"><h3>Dataset</h3><p><a href="https://huggingface.co/datasets/shenn667/cited-rag-golden-52">HF · shenn667/cited-rag-golden-52</a><br><span class="meta">Golden set (52 Q). URL per spec — dataset publication running in parallel; if the link 404s, use <code>eval/golden.jsonl</code> in the repo.</span></p></div>
+<div class="card"><h3>Article</h3><p><a href="https://dev.to/shenn667/zero-dependency-verified-agents-cited-or-refused-gated-in-ci-3fnh">dev.to · Zero-Dependency Verified Agents</a><br><span class="meta">2026-11-18 — the 3-brick loop (context → cited answer → CI gate).</span></p></div>
+<div class="card"><h3>Registry</h3><p><span class="badge todo">TODO — FOUNDER ACTION</span></p>
+<!-- TODO(glama, founder): No Glama listing for cited-rag was found (2026-11-20; Glama indexes MCP servers, cited-rag is a stdlib CLI, not an MCP server).
+     INSTRUCTIONS FOR THE FOUNDER:
+     1. If you ship an MCP wrapper for cited-rag, submit it to https://glama.ai/mcp/servers and get its URL (shape: https://glama.ai/mcp/servers/USER/SLUG).
+     2. Replace the href below with that URL and delete this TODO badge + comment.
+     3. If no MCP wrapper is planned, delete this whole card. Do NOT link an unrelated server. -->
+<p class="meta">No Glama Registry URL known — cited-rag is a CLI, not an MCP server, so no listing is expected unless an MCP wrapper is published. Founder: replace <code>href="#todo-glama"</code> with the real listing URL, or remove this card.</p>
+<p><a id="todo-glama" href="#todo-glama">Glama Registry — pending</a></p></div>
+</div>
+
+<h2>6. Reproduce it now</h2>
+<pre><code>git clone https://github.com/shenn667/cited-rag.git
+cd cited-rag
+pip install cited-rag   # or: pip install -e .
+cited-rag index examples/docs
+cited-rag ask "What are the default BM25 parameters?" --k 5
+cited-rag ask "What is the best sourdough recipe?" --k 5   # -&gt; Insufficient evidence
+cited-rag eval --golden eval/golden.jsonl
+# expected: Recall@5=1.00  MRR=0.93  correct-refusal=1.00 (12/12)  n=52</code></pre>
+
+<footer>
+<p class="meta">Numbers certified by <code>QA_REPORT_v0.1.0.md</code> (2026-11-16) and re-verified on this machine: eval triple reproduced; pytest green (59 at QA, 61 on current tree). Protocol questions → repo issues. Page: static HTML, no tracker, no build step.</p>
+</footer>
+</body>
+</html>
