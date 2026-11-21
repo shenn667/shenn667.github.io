@@ -30,6 +30,7 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #ccc; }
 
 <h1>cited-rag — Evaluation</h1>
 <p class="meta">Software Quality Engineering report · <strong>v0.1.0</strong> · QA certified 2026-11-16 (board <code>cited-rag</code>, task <code>t_e42b7406</code>) · Scope: <code>PRODUCT_BRIEF.md §2</code> · Verdict: <span class="badge pass">PASS 6/6</span></p>
+<p class="meta"><strong>Current release:</strong> <a href="https://pypi.org/project/cited-rag/">PyPI · cited-rag v0.1.1</a> (70 tests passing) is the published version. The 52-question SQE evaluation below was measured on <strong>v0.1.0</strong> (QA-certified baseline, 2026-11-16); the retrieval, citation and refusal pipeline is unchanged in v0.1.1, so every metric below remains identical on <strong>v0.1.1</strong>.</p>
 
 <p>Local RAG you can trust. Zero hallucination by design: every claim is cited (<code>[file:L1-L2]</code>) or the answer is refused with <code>Insufficient evidence</code>. Stdlib-only, offline-first.</p>
 
@@ -53,7 +54,7 @@ cited-rag eval --golden eval/golden.jsonl</code></pre>
 <tr><td>MRR</td><td>≥ 0.60</td><td><strong>0.93</strong></td><td><span class="badge pass">PASS</span></td></tr>
 <tr><td>Correct-refusal (off-topic)</td><td>≥ 0.90</td><td><strong>1.00 (12/12)</strong></td><td><span class="badge pass">PASS</span></td></tr>
 <tr><td>n (golden)</td><td>≥ 50 Q/A</td><td><strong>52</strong> (40 + 12)</td><td><span class="badge pass">PASS</span></td></tr>
-<tr><td>pytest</td><td>green</td><td><strong>59 passed</strong> (QA run; current tree: 61)</td><td><span class="badge pass">PASS</span></td></tr>
+<tr><td>pytest</td><td>green</td><td><strong>70 passed</strong> (v0.1.1; 59 at QA baseline)</td><td><span class="badge pass">PASS</span></td></tr>
 <tr><td>Index perf</td><td>&lt; 60 s / 50 docs</td><td><strong>12 docs in ~0.4 s</strong> *</td><td><span class="badge pass">PASS *</span></td></tr>
 </tbody>
 </table>
@@ -68,7 +69,7 @@ cited-rag eval --golden eval/golden.jsonl</code></pre>
 <tr><td>C3 refusal</td><td><code>Insufficient evidence</code>, exit 0, no invented citations</td><td>12/12 off-topic → refusal</td><td><span class="badge pass">PASS</span></td></tr>
 <tr><td>C4 eval</td><td>Recall@5 ≥ 0.80, MRR ≥ 0.60, refusal ≥ 0.90, ≥ 50 Q/A</td><td>1.00 / 0.93 / 1.00, n = 52</td><td><span class="badge pass">PASS</span></td></tr>
 <tr><td>C5 LLM OFF by default</td><td>opt-in <code>--llm</code> only, citation format unchanged</td><td><code>store_true, default=False</code>; no network outside adapter</td><td><span class="badge pass">PASS</span></td></tr>
-<tr><td>C6 tests + perf + docs</td><td>pytest green, index &lt; 60 s, 3-command quickstart</td><td>59 passed (QA) / 0.4 s / README quickstart</td><td><span class="badge pass">PASS *</span></td></tr>
+<tr><td>C6 tests + perf + docs</td><td>pytest green, index &lt; 60 s, 3-command quickstart</td><td>59 passed (QA) / 70 on v0.1.1 / 0.4 s / README quickstart</td><td><span class="badge pass">PASS *</span></td></tr>
 </tbody>
 </table>
 <p class="meta">* Same 50-docs reserve as §2. Blocking gates C2/C3/C4 all PASS → YES to ship, tag <code>cited-rag-v0.1.0</code>.</p>
@@ -84,7 +85,7 @@ cited-rag eval --golden eval/golden.jsonl</code></pre>
 
 <h2>5. Artifacts &amp; links</h2>
 <div class="grid">
-<div class="card"><h3>Package</h3><p><a href="https://pypi.org/project/cited-rag/">PyPI · cited-rag v0.1.0</a><br><code>pip install cited-rag</code></p></div>
+<div class="card"><h3>Package</h3><p><a href="https://pypi.org/project/cited-rag/">PyPI · cited-rag v0.1.1</a> (70 tests)<br><code>pip install cited-rag</code></p></div>
 <div class="card"><h3>Source</h3><p><a href="https://github.com/shenn667/cited-rag">GitHub · shenn667/cited-rag</a><br>CI badge, MIT, Trusted Publishing (no stored token).</p></div>
 <div class="card"><h3>Dataset</h3><p><a href="https://huggingface.co/datasets/SHENNN667/cited-rag-golden-52">HF · SHENNN667/cited-rag-golden-52</a><br><span class="meta">Golden set (52 Q). Published under namespace SHENNN667 (no write rights on shenn667 — the lowercase shenn667/... URL returns 401, use this link). Fallback: <code>eval/golden.jsonl</code> in the repo.</span></p></div>
 <div class="card"><h3>Article</h3><p><a href="https://dev.to/shenn667/zero-dependency-verified-agents-cited-or-refused-gated-in-ci-3fnh">dev.to · Zero-Dependency Verified Agents</a><br><span class="meta">2026-11-18 — the 3-brick loop (context → cited answer → CI gate).</span></p></div>
@@ -102,7 +103,7 @@ cited-rag eval --golden eval/golden.jsonl
 # expected: Recall@5=1.00  MRR=0.93  correct-refusal=1.00 (12/12)  n=52</code></pre>
 
 <footer>
-<p class="meta">Numbers certified by <code>QA_REPORT_v0.1.0.md</code> (2026-11-16) and re-verified on this machine: eval triple reproduced; pytest green (59 at QA, 61 on current tree). Protocol questions → repo issues. Page: static HTML, no tracker, no build step.</p>
+<p class="meta">Numbers certified by <code>QA_REPORT_v0.1.0.md</code> (2026-11-16), re-verified on this machine, and unchanged on v0.1.1: eval triple reproduced; pytest green (59 at QA, 70 on v0.1.1). The 52-question SQE eval was measured on v0.1.0 and remains identical on v0.1.1. Protocol questions → repo issues. Page: static HTML, no tracker, no build step.</p>
 </footer>
 </body>
 </html>
